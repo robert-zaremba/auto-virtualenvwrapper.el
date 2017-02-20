@@ -39,6 +39,9 @@
 (require 'virtualenvwrapper)
 (require 's)
 
+(declare-function projectile-project-name "projectile")
+(declare-function projectile-project-root "projectile")
+
 (defun auto-virtualenvwrapper-first-file-exists-p (filelist)
   "Select first file from the FILELIST which exists."
   (cl-loop for filename in (mapcar #'expand-file-name filelist)
