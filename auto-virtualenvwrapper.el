@@ -6,7 +6,7 @@
 ;;         Robert Zaremba <robert-zaremba@scale-it.pl>
 ;; Version: 1.0
 ;; Keywords: Python, Virtualenv, Tools
-;; Package-Requires: ((cl-lib "0.6") (s "1.10.0") (virtualenvwrapper "20161002.1515"))
+;; Package-Requires: ((cl-lib "0.6") (s "1.10.0") (virtualenvwrapper "0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
