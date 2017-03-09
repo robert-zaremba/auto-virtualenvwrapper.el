@@ -55,7 +55,7 @@
   :group 'auto-virtualenvwrapper)
 
 (defvar auto-virtualenvwrapper-project-root-files
-  '(".python-version" ".dir-locals.el" ".projectile" ".emacs-project" "manage.py" ".git" ".hg")
+  '(".python-version" ".dir-locals.el" ".projectile" ".emacs-project")
   "The presence of any file/directory in this list indicates a project root.")
 
 (defvar auto-virtualenvwrapper-verbose nil
