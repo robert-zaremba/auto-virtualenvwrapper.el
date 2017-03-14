@@ -16,13 +16,7 @@ This code is based on [auto-virtualenv](https://github.com/marcwebbie/auto-virtu
 
 ### MELPA
 
-TBD. Waiting for adding the package to the melpa repository.
-
-<!-- `auto-virtualenvwrapper` is available on [MELPA](https://melpa.org). -->
-
-<!-- You can install `auto-virtualenvwrapper` with the following command. -->
-
-<!-- <kbd>M-x package-install [RET] auto-virtualenvwrapper [RET]</kbd> -->
+<kbd>M-x package-install [RET] auto-virtualenvwrapper [RET]</kbd>
 
 ### manual
 
