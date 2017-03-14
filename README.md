@@ -2,7 +2,7 @@
 
 Automatically activates python virtualenv on emacs using:
 
-* `python-versoin` file in the project root.
+* `python-version` file in the project root.
 * `.venv` or `venv` directory (or link) in the project root.
 * Try find a virtualenv with the same name of Project Root.
 
