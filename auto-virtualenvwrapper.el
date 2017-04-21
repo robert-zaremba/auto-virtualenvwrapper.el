@@ -1,4 +1,4 @@
-;;; auto-virtualenvwrapper.el --- Auto activate python virtualenvs
+;;; auto-virtualenvwrapper.el --- Lightweight auto activate python virtualenvs
 
 ;; Copyright (C) 2017 Marcwebbie, Robert Zaremba
 
