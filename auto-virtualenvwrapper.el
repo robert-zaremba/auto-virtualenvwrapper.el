@@ -5,6 +5,7 @@
 ;; Author: Marcwebbie <marcwebbie@gmail.com>
 ;;         Robert Zaremba <robert-zaremba@scale-it.pl>
 ;; Version: 1.0
+;; Package-Version: 20170518
 ;; Keywords: Python, Virtualenv, Tools
 ;; Package-Requires: ((cl-lib "0.6") (s "1.10.0") (virtualenvwrapper "0"))
 
@@ -55,10 +56,10 @@
   :group 'auto-virtualenvwrapper)
 
 (defvar auto-virtualenvwrapper-project-root-files
-  '(".python-version" ".dir-locals.el" ".projectile" ".emacs-project")
+  '(".python-version" ".dir-locals.el" ".projectile" ".emacs-project" ".workon")
   "The presence of any file/directory in this list indicates a project root.")
 
-(defvar auto-virtualenvwrapper-verbose nil
+(defvar auto-virtualenvwrapper-verbose t
   "Verbose output on activation.")
 
 (defvar auto-virtualenvwrapper--path nil
@@ -69,6 +70,10 @@
   "Used internally to cache the project root.")
 (make-variable-buffer-local 'auto-virtualenvwrapper--project-root)
 
+(defun auto-virtualenvwrapper-message (msg &rest rest)
+  "Prints the MSG REST in the message area."
+  (when auto-virtualenvwrapper-verbose
+    (apply #'message (concat "[auto-virtualenvwrapper] " msg) rest)))
 
 (defun auto-virtualenvwrapper--project-root-projectile ()
   "Return projectile root if projectile is available."
@@ -100,7 +105,10 @@
             (or (auto-virtualenvwrapper--project-root-projectile)
                 (auto-virtualenvwrapper--project-root-vc)
                 (auto-virtualenvwrapper--project-root-traverse)
-             ""))))
+                "")))
+  (when (eq auto-virtualenvwrapper--project-root "")
+      (auto-virtualenvwrapper-message "Can't find project root"))
+  auto-virtualenvwrapper--project-root)
 
 (defun auto-virtualenvwrapper--project-name ()
   "Return the project project root name."
@@ -118,28 +126,39 @@
 
 (defun auto-virtualenvwrapper-find-virtualenv-path ()
   "Get current buffer-file possible virtualenv name.
-1. Try name from .python-version file if it exists or
+1. Try name from .python-version or .workon file if it exists
 2. Try .venv dir in the root of project
 3. Try venv dir in the root of project
 4. Try find a virtualenv with the same name of Project Root.
 Project root name is found using `auto-virtualenvwrapper--project-root'"
   (let ((python-version-file (expand-file-name ".python-version" (auto-virtualenvwrapper--project-root)))
+        (workon-file (expand-file-name ".workon" (auto-virtualenvwrapper--project-root)))
         (dot-venv-dir (expand-file-name ".venv" (auto-virtualenvwrapper--project-root)))
         (venv-dir (expand-file-name "venv" (auto-virtualenvwrapper--project-root))))
     (cond
-     ;; 1. Try name from .python-version file if it exists or
+     ;; 1.1 Try name from .python-version file if it exists
      ((file-exists-p python-version-file)
+      (auto-virtualenvwrapper-message "using virtualenv from .python-version")
       (auto-virtualenvwrapper-expandpath
        (with-temp-buffer
          (insert-file-contents python-version-file) (s-trim (buffer-string)))))
+     ;; 1.2 Try name from .workon file if it exists
+     ((file-exists-p workon-file)
+      (auto-virtualenvwrapper-message "using virtualenv from .workon")
+      (auto-virtualenvwrapper-expandpath
+       (with-temp-buffer
+         (insert-file-contents workon-file) (s-trim (buffer-string)))))
      ;; 2. Try .venv dir in the root of project
      ((file-exists-p dot-venv-dir)
+      (auto-virtualenvwrapper-message "using virtualenv from .venv directory")
       dot-venv-dir)
      ;; 3. Try .venv dir in the root of project
      ((file-exists-p venv-dir)
+      (auto-virtualenvwrapper-message "using virtualenv from venv directory")
       venv-dir)
      ;; 4. Try find a virtualenv with the same name of Project Root.
      ((and (auto-virtualenvwrapper--versions) (member (auto-virtualenvwrapper--project-name) (auto-virtualenvwrapper--versions)))
+      (auto-virtualenvwrapper-message "using virtualenv based on the root directory name")
       (auto-virtualenvwrapper-expandpath (auto-virtualenvwrapper--project-name))))))
 
 ;;;###autoload
@@ -150,8 +169,7 @@ Project root name is found using `auto-virtualenvwrapper--project-root'"
       (setq auto-virtualenvwrapper--path path
             venv-current-name (file-name-base (file-truename path)))
       (venv--activate-dir auto-virtualenvwrapper--path)
-      (when auto-virtualenvwrapper-verbose
-        (message "activated virtualenv: %s" path)))))
+      (auto-virtualenvwrapper-message "activated virtualenv: %s" path))))
 
 (provide 'auto-virtualenvwrapper)
 
