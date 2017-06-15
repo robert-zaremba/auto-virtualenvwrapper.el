@@ -133,8 +133,8 @@
 Project root name is found using `auto-virtualenvwrapper--project-root'"
   (let ((python-version-file (expand-file-name ".python-version" (auto-virtualenvwrapper--project-root)))
         (workon-file (expand-file-name ".workon" (auto-virtualenvwrapper--project-root)))
-        (dot-venv-dir (expand-file-name ".venv" (auto-virtualenvwrapper--project-root)))
-        (venv-dir (expand-file-name "venv" (auto-virtualenvwrapper--project-root))))
+        (dot-venv-dir (expand-file-name ".venv/" (auto-virtualenvwrapper--project-root)))
+        (venv-dir (expand-file-name "venv/" (auto-virtualenvwrapper--project-root))))
     (cond
      ;; 1.1 Try name from .python-version file if it exists
      ((file-exists-p python-version-file)
