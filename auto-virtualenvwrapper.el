@@ -82,9 +82,9 @@
 
 (defun auto-virtualenvwrapper--project-root-vc ()
   "Return vc root if file is in version control."
-  (when (or
-         (vc-find-root (or (buffer-file-name) "") ".git")
-         (vc-find-root (or (buffer-file-name) "") ".hg"))))
+  (or
+   (vc-find-root (or (buffer-file-name) "") ".git")
+   (vc-find-root (or (buffer-file-name) "") ".hg")))
 
 
 (defun auto-virtualenvwrapper--project-root-traverse ()
