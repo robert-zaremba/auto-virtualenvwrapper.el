@@ -103,8 +103,8 @@
   (or auto-virtualenvwrapper--project-root
       (setq auto-virtualenvwrapper--project-root
             (or (auto-virtualenvwrapper--project-root-projectile)
-                (auto-virtualenvwrapper--project-root-vc)
                 (auto-virtualenvwrapper--project-root-traverse)
+                (auto-virtualenvwrapper--project-root-vc)
                 "")))
   (when (eq auto-virtualenvwrapper--project-root "")
       (auto-virtualenvwrapper-message "Can't find project root"))
