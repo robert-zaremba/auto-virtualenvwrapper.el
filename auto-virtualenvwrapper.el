@@ -4,8 +4,8 @@
 
 ;; Author: Marcwebbie <marcwebbie@gmail.com>
 ;;         Robert Zaremba <robert-zaremba@scale-it.pl>
-;; Version: 1.0
-;; Package-Version: 20170518
+;; Version: 1.1
+;; Package-Version: 20181006
 ;; Keywords: Python, Virtualenv, Tools
 ;; Package-Requires: ((cl-lib "0.6") (s "1.10.0") (virtualenvwrapper "0"))
 
