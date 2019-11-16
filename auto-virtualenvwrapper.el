@@ -200,6 +200,7 @@ If invoked with prefix command argument, cached information is ignored."
               auto-virtualenvwrapper--path-cached-in default-directory))
     (cond
      ((and path (not (equal path venv-current-dir)))
+      (venv-deactivate)
       (setq venv-current-name (file-name-base (file-truename path)))
       (venv--activate-dir auto-virtualenvwrapper--path)
       (auto-virtualenvwrapper-message "activated virtualenv: %s" path)))))
