@@ -164,11 +164,13 @@ Project root name is found using `auto-virtualenvwrapper--project-root'"
 ;;;###autoload
 (defun auto-virtualenvwrapper-activate ()
   "Activate virtualenv for buffer-filename."
-  (let ((path (auto-virtualenvwrapper-find-virtualenv-path)))
+  (let ((path (or auto-virtualenvwrapper--path
+                  (auto-virtualenvwrapper-find-virtualenv-path))))
+    (if path
+        (setq auto-virtualenvwrapper--path path))
     (cond
      ((and path (not (equal path venv-current-dir)))
-      (setq auto-virtualenvwrapper--path path
-            venv-current-name (file-name-base (file-truename path)))
+      (setq venv-current-name (file-name-base (file-truename path)))
       (venv--activate-dir auto-virtualenvwrapper--path)
       (auto-virtualenvwrapper-message "activated virtualenv: %s" path)))))
 
