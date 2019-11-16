@@ -55,6 +55,14 @@
   :safe #'stringp
   :group 'auto-virtualenvwrapper)
 
+(defcustom auto-virtualenvwrapper-auto-deactivate
+  nil
+  "If set to t, `auto-virtualenvwrapper-activate' deactivates
+already activated virtualenv at visiting the buffer not related
+any virtualenv. This is nil by default, for backward compatibility."
+  :type '(boolean)
+  :group 'auto-virtualenvwrapper)
+
 (defvar auto-virtualenvwrapper-project-root-files
   '(".python-version" ".dir-locals.el" ".projectile" ".emacs-project" ".workon" "Pipfile")
   "The presence of any file/directory in this list indicates a project root.")
@@ -186,7 +194,9 @@ Project root name is found using `auto-virtualenvwrapper--project-root'"
 ;;;###autoload
 (defun auto-virtualenvwrapper-activate (&optional ignore-cache)
   "Activate virtualenv for buffer-filename.
-If invoked with prefix command argument, cached information is ignored."
+If invoked with prefix command argument, cached information is ignored.
+Set `auto-virtualenvwrapper-auto-deactivate' to t, if you want deactivate
+automatically at visiting the buffer not related to any virtualenv."
   (interactive "P")
   (when ignore-cache
     (kill-local-variable 'auto-virtualenvwrapper--path)
@@ -203,7 +213,11 @@ If invoked with prefix command argument, cached information is ignored."
       (venv-deactivate)
       (setq venv-current-name (file-name-base (file-truename path)))
       (venv--activate-dir auto-virtualenvwrapper--path)
-      (auto-virtualenvwrapper-message "activated virtualenv: %s" path)))))
+      (auto-virtualenvwrapper-message "activated virtualenv: %s" path))
+     ((and (not path) venv-current-dir auto-virtualenvwrapper-auto-deactivate)
+      (auto-virtualenvwrapper-message
+       "deactivated virtualenv: %s" venv-current-dir)
+      (venv-deactivate)))))
 
 (provide 'auto-virtualenvwrapper)
 
