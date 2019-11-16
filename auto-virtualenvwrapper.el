@@ -184,8 +184,13 @@ Project root name is found using `auto-virtualenvwrapper--project-root'"
       (auto-virtualenvwrapper-expandpath (auto-virtualenvwrapper--project-name))))))
 
 ;;;###autoload
-(defun auto-virtualenvwrapper-activate ()
-  "Activate virtualenv for buffer-filename."
+(defun auto-virtualenvwrapper-activate (&optional ignore-cache)
+  "Activate virtualenv for buffer-filename.
+If invoked with prefix command argument, cached information is ignored."
+  (interactive "P")
+  (when ignore-cache
+    (kill-local-variable 'auto-virtualenvwrapper--path)
+    (kill-local-variable 'auto-virtualenvwrapper--project-root))
   (let ((path (or (and (equal auto-virtualenvwrapper--path-cached-in
                               default-directory)
                        auto-virtualenvwrapper--path)
