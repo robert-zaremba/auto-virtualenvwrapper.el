@@ -66,9 +66,27 @@
   "Used internally to cache the current virtualenv path.")
 (make-variable-buffer-local 'auto-virtualenvwrapper--path)
 
+(defvar auto-virtualenvwrapper--path-cached-in nil
+  "Used internally to validate `auto-virtualenvwrapper--path' cache.
+`default-directory' value is assigned to this variable at caching
+in function `auto-virtualenvwrapper-activate'.
+If this is not equal to `default-directory', cache is treated as
+invalid, because the buffer might be moved to another project.
+This is nil, if `auto-virtualenvwrapper-find-virtualenv-path'
+finds no related virtualenv for a buffer")
+(make-variable-buffer-local 'auto-virtualenvwrapper--path-cached-in)
+
 (defvar auto-virtualenvwrapper--project-root nil
   "Used internally to cache the project root.")
 (make-variable-buffer-local 'auto-virtualenvwrapper--project-root)
+
+(defvar auto-virtualenvwrapper--project-root-cached-in nil
+  "Used internally to validate `auto-virtualenvwrapper--project-root' cache.
+`default-directory' value is assigned to this variable at caching
+in function `auto-virtualenvwrapper--project-root'.
+If this is not equal to `default-directory', cache is treated as
+invalid, because the buffer might be moved to another project.")
+(make-variable-buffer-local 'auto-virtualenvwrapper--project-root-cached-in)
 
 (defun auto-virtualenvwrapper-message (msg &rest rest)
   "Prints the MSG REST in the message area."
@@ -100,12 +118,16 @@
 
 (defun auto-virtualenvwrapper--project-root ()
   "Return the current project root directory."
-  (or auto-virtualenvwrapper--project-root
+  (or (and (equal auto-virtualenvwrapper--project-root-cached-in
+                  default-directory)
+               auto-virtualenvwrapper--project-root)
       (setq auto-virtualenvwrapper--project-root
             (or (auto-virtualenvwrapper--project-root-projectile)
                 (auto-virtualenvwrapper--project-root-traverse)
                 (auto-virtualenvwrapper--project-root-vc)
-                "")))
+                "")
+            auto-virtualenvwrapper--project-root-cached-in
+            default-directory))
   (when (eq auto-virtualenvwrapper--project-root "")
       (auto-virtualenvwrapper-message "Can't find project root"))
   auto-virtualenvwrapper--project-root)
@@ -164,10 +186,13 @@ Project root name is found using `auto-virtualenvwrapper--project-root'"
 ;;;###autoload
 (defun auto-virtualenvwrapper-activate ()
   "Activate virtualenv for buffer-filename."
-  (let ((path (or auto-virtualenvwrapper--path
+  (let ((path (or (and (equal auto-virtualenvwrapper--path-cached-in
+                              default-directory)
+                       auto-virtualenvwrapper--path)
                   (auto-virtualenvwrapper-find-virtualenv-path))))
     (if path
-        (setq auto-virtualenvwrapper--path path))
+        (setq auto-virtualenvwrapper--path path
+              auto-virtualenvwrapper--path-cached-in default-directory))
     (cond
      ((and path (not (equal path venv-current-dir)))
       (setq venv-current-name (file-name-base (file-truename path)))
