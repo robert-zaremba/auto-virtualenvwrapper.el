@@ -55,6 +55,14 @@
   :safe #'stringp
   :group 'auto-virtualenvwrapper)
 
+(defcustom auto-virtualenvwrapper-auto-deactivate
+  nil
+  "If set to t, `auto-virtualenvwrapper-activate' deactivates
+already activated virtualenv at visiting the buffer not related
+any virtualenv. This is nil by default, for backward compatibility."
+  :type '(boolean)
+  :group 'auto-virtualenvwrapper)
+
 (defvar auto-virtualenvwrapper-project-root-files
   '(".python-version" ".dir-locals.el" ".projectile" ".emacs-project" ".workon" "Pipfile")
   "The presence of any file/directory in this list indicates a project root.")
@@ -66,9 +74,27 @@
   "Used internally to cache the current virtualenv path.")
 (make-variable-buffer-local 'auto-virtualenvwrapper--path)
 
+(defvar auto-virtualenvwrapper--path-cached-in nil
+  "Used internally to validate `auto-virtualenvwrapper--path' cache.
+`default-directory' value is assigned to this variable at caching
+in function `auto-virtualenvwrapper-activate'.
+If this is not equal to `default-directory', cache is treated as
+invalid, because the buffer might be moved to another project.
+This is nil, if `auto-virtualenvwrapper-find-virtualenv-path'
+finds no related virtualenv for a buffer")
+(make-variable-buffer-local 'auto-virtualenvwrapper--path-cached-in)
+
 (defvar auto-virtualenvwrapper--project-root nil
   "Used internally to cache the project root.")
 (make-variable-buffer-local 'auto-virtualenvwrapper--project-root)
+
+(defvar auto-virtualenvwrapper--project-root-cached-in nil
+  "Used internally to validate `auto-virtualenvwrapper--project-root' cache.
+`default-directory' value is assigned to this variable at caching
+in function `auto-virtualenvwrapper--project-root'.
+If this is not equal to `default-directory', cache is treated as
+invalid, because the buffer might be moved to another project.")
+(make-variable-buffer-local 'auto-virtualenvwrapper--project-root-cached-in)
 
 (defun auto-virtualenvwrapper-message (msg &rest rest)
   "Prints the MSG REST in the message area."
@@ -100,12 +126,16 @@
 
 (defun auto-virtualenvwrapper--project-root ()
   "Return the current project root directory."
-  (or auto-virtualenvwrapper--project-root
+  (or (and (equal auto-virtualenvwrapper--project-root-cached-in
+                  default-directory)
+               auto-virtualenvwrapper--project-root)
       (setq auto-virtualenvwrapper--project-root
             (or (auto-virtualenvwrapper--project-root-projectile)
                 (auto-virtualenvwrapper--project-root-traverse)
                 (auto-virtualenvwrapper--project-root-vc)
-                "")))
+                "")
+            auto-virtualenvwrapper--project-root-cached-in
+            default-directory))
   (when (eq auto-virtualenvwrapper--project-root "")
       (auto-virtualenvwrapper-message "Can't find project root"))
   auto-virtualenvwrapper--project-root)
@@ -162,14 +192,32 @@ Project root name is found using `auto-virtualenvwrapper--project-root'"
       (auto-virtualenvwrapper-expandpath (auto-virtualenvwrapper--project-name))))))
 
 ;;;###autoload
-(defun auto-virtualenvwrapper-activate ()
-  "Activate virtualenv for buffer-filename."
-  (let ((path (auto-virtualenvwrapper-find-virtualenv-path)))
-    (when (and path (not (equal path auto-virtualenvwrapper--path)))
-      (setq auto-virtualenvwrapper--path path
-            venv-current-name (file-name-base (file-truename path)))
+(defun auto-virtualenvwrapper-activate (&optional ignore-cache)
+  "Activate virtualenv for buffer-filename.
+If invoked with prefix command argument, cached information is ignored.
+Set `auto-virtualenvwrapper-auto-deactivate' to t, if you want deactivate
+automatically at visiting the buffer not related to any virtualenv."
+  (interactive "P")
+  (when ignore-cache
+    (kill-local-variable 'auto-virtualenvwrapper--path)
+    (kill-local-variable 'auto-virtualenvwrapper--project-root))
+  (let ((path (or (and (equal auto-virtualenvwrapper--path-cached-in
+                              default-directory)
+                       auto-virtualenvwrapper--path)
+                  (auto-virtualenvwrapper-find-virtualenv-path))))
+    (if path
+        (setq auto-virtualenvwrapper--path path
+              auto-virtualenvwrapper--path-cached-in default-directory))
+    (cond
+     ((and path (not (equal path venv-current-dir)))
+      (venv-deactivate)
+      (setq venv-current-name (file-name-base (file-truename path)))
       (venv--activate-dir auto-virtualenvwrapper--path)
-      (auto-virtualenvwrapper-message "activated virtualenv: %s" path))))
+      (auto-virtualenvwrapper-message "activated virtualenv: %s" path))
+     ((and (not path) venv-current-dir auto-virtualenvwrapper-auto-deactivate)
+      (auto-virtualenvwrapper-message
+       "deactivated virtualenv: %s" venv-current-dir)
+      (venv-deactivate)))))
 
 (provide 'auto-virtualenvwrapper)
 
