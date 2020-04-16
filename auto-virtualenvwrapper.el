@@ -117,10 +117,11 @@ invalid, because the buffer might be moved to another project.")
   "Tranvese parent directories looking for files in `auto-virtualenvwrapper-project-root-files' that indicates a root directory."
   (let ((dominating-file (locate-dominating-file default-directory
                            (lambda (dir)
-                             (cl-intersection
-                              auto-virtualenvwrapper-project-root-files
-                              (directory-files dir)
-                              :test 'string-equal)))))
+                             (and (file-directory-p dir)
+                                  (cl-intersection
+                                   auto-virtualenvwrapper-project-root-files
+                                   (directory-files dir)
+                                   :test 'string-equal))))))
     (when dominating-file
       (expand-file-name dominating-file))))
 
