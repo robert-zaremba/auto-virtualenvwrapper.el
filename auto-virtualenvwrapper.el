@@ -212,7 +212,7 @@ automatically at visiting the buffer not related to any virtualenv."
     (cond
      ((and path (not (equal path venv-current-dir)))
       (venv-deactivate)
-      (setq venv-current-name (file-name-base (file-truename path)))
+      (setq venv-current-name (file-name-nondirectory (file-truename path)))
       (venv--activate-dir auto-virtualenvwrapper--path)
       (auto-virtualenvwrapper-message "activated virtualenv: %s" path))
      ((and (not path) venv-current-dir auto-virtualenvwrapper-auto-deactivate)
