@@ -155,6 +155,17 @@ invalid, because the buffer might be moved to another project.")
 (defun auto-virtualenvwrapper-expandpath (path)
   (expand-file-name path auto-virtualenvwrapper-dir))
 
+(defun auto-virtualenvwrapper--is-valid-venv (path)
+  "Check if a virtualenv PATH is valid.
+That is, it must contain a Python executable."
+  (file-exists-p (expand-file-name "bin/python" path)))
+
+(defun auto-virtualenvwrapper--venv-by-file (file)
+  "Build a virtualenv path by reading its name from FILE."
+  (auto-virtualenvwrapper-expandpath
+   (with-temp-buffer
+     (insert-file-contents file) (s-trim (buffer-string)))))
+
 (defun auto-virtualenvwrapper-find-virtualenv-path ()
   "Get current buffer-file possible virtualenv name.
 1. Try name from .python-version or .workon file if it exists
@@ -168,27 +179,32 @@ Project root name is found using `auto-virtualenvwrapper--project-root'"
         (venv-dir (expand-file-name "venv/" (auto-virtualenvwrapper--project-root))))
     (cond
      ;; 1.1 Try name from .python-version file if it exists
-     ((file-exists-p python-version-file)
+     ((and (file-exists-p python-version-file)
+	   (auto-virtualenvwrapper--is-valid-venv
+	    (auto-virtualenvwrapper--venv-by-file python-version-file)))
       (auto-virtualenvwrapper-message "using virtualenv from .python-version")
-      (auto-virtualenvwrapper-expandpath
-       (with-temp-buffer
-         (insert-file-contents python-version-file) (s-trim (buffer-string)))))
+      (auto-virtualenvwrapper--venv-by-file python-version-file))
      ;; 1.2 Try name from .workon file if it exists
-     ((file-exists-p workon-file)
+     ((and (file-exists-p workon-file)
+	   (auto-virtualenvwrapper--is-valid-venv
+	    (auto-virtualenvwrapper--venv-by-file workon-file)))
       (auto-virtualenvwrapper-message "using virtualenv from .workon")
-      (auto-virtualenvwrapper-expandpath
-       (with-temp-buffer
-         (insert-file-contents workon-file) (s-trim (buffer-string)))))
+      (auto-virtualenvwrapper--venv-by-file workon-file))
      ;; 2. Try .venv dir in the root of project
-     ((file-exists-p dot-venv-dir)
+     ((and (file-exists-p dot-venv-dir)
+	   (auto-virtualenvwrapper--is-valid-venv dot-venv-dir))
       (auto-virtualenvwrapper-message "using virtualenv from .venv directory")
       dot-venv-dir)
      ;; 3. Try .venv dir in the root of project
-     ((file-exists-p venv-dir)
+     ((and (file-exists-p venv-dir)
+	   (auto-virtualenvwrapper--is-valid-venv venv-dir))
       (auto-virtualenvwrapper-message "using virtualenv from venv directory")
       venv-dir)
      ;; 4. Try find a virtualenv with the same name of Project Root.
-     ((and (auto-virtualenvwrapper--versions) (member (auto-virtualenvwrapper--project-name) (auto-virtualenvwrapper--versions)))
+     ((and (auto-virtualenvwrapper--versions)
+	   (member (auto-virtualenvwrapper--project-name) (auto-virtualenvwrapper--versions))
+	   (auto-virtualenvwrapper--is-valid-venv
+	    (auto-virtualenvwrapper-expandpath (auto-virtualenvwrapper--project-name))))
       (auto-virtualenvwrapper-message "using virtualenv based on the root directory name")
       (auto-virtualenvwrapper-expandpath (auto-virtualenvwrapper--project-name))))))
 
