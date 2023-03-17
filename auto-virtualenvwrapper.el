@@ -4,10 +4,10 @@
 
 ;; Author: Marcwebbie <marcwebbie@gmail.com>
 ;;         Robert Zaremba <robert-zaremba@scale-it.pl>
-;; Version: 1.1
-;; Package-Version: 20181006
+;; Version: 1.2
+;; Package-Version: 20230317
 ;; Keywords: Python, Virtualenv, Tools
-;; Package-Requires: ((cl-lib "0.6") (s "1.10.0") (virtualenvwrapper "0"))
+;; Package-Requires: ((cl-lib "1.0") (s "1.13.0") (virtualenvwrapper "0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
